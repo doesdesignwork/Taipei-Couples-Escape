@@ -67,7 +67,7 @@
             padding: 0.85rem; 
             border-radius: 0.75rem; 
             transition: transform 0.2s, box-shadow 0.2s; 
-            text-decoration: none;
+            text-decoration: none !important;
             margin-top: 0.75rem;
             border: none;
             width: 100%;
@@ -139,9 +139,8 @@
         <!-- Right/Bottom Panel: Content Area -->
         <div class="w-full h-[60dvh] md:h-full md:w-7/12 lg:w-1/2 overflow-y-auto scroll-smooth hide-scrollbar relative z-10 bg-[#fafafa] pb-16">
             
-            <!-- Header Section with background image -->
             <header class="relative bg-slate-900 text-white overflow-hidden pb-10 pt-12 px-6 sm:px-10">
-                <div class="absolute inset-0 opacity-50 bg-cover bg-center mix-blend-overlay" style="background-image: url('image_b6cb3b.png');"></div>
+                <div class="absolute inset-0 bg-slate-800 bg-cover bg-center mix-blend-overlay"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/30"></div>
                 
                 <div class="relative z-10 max-w-2xl mx-auto">
@@ -298,8 +297,28 @@
                                             <h4 class="font-bold text-fuchsia-800 text-xs uppercase tracking-wider mb-1 flex items-center"><i class="fa-solid fa-camera-retro text-fuchsia-500 mr-1.5"></i> Must-Do Activity</h4>
                                             <p class="text-slate-700 mb-0 text-[13px] leading-relaxed"><b>Korean Self-Photo Studios:</b> The area is packed with automated photo booths (like 'Photoism'). Grab cute props and snap couple pics! <b class="text-fuchsia-900">~NT$200 <span class="text-fuchsia-600 font-semibold">(~S$8.30)</span></b>.</p>
                                         </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
 
-                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                    <!-- DAY 2 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-emerald-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 2 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 21 (Fri)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-emerald-200 via-emerald-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Chiang Kai-shek Memorial Hall')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(16,185,129,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition-colors">10:00 AM - History & Architecture</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Chiang Kai-shek Memorial Hall</div>
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm mt-3">
                                             <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
                                             <div class="space-y-3">
                                                 <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Chun Shui Tang (CKS)');">
@@ -347,8 +366,17 @@
                                             <h4 class="font-bold text-fuchsia-800 text-xs uppercase tracking-wider mb-1 flex items-center"><i class="fa-solid fa-vr-cardboard text-fuchsia-500 mr-1.5"></i> Must-Do Activity</h4>
                                             <p class="text-slate-700 mb-0 text-[13px] leading-relaxed"><b>i-Ride TAIPEI (Breeze Nan Shan):</b> An incredible 5D flying theater experience where you physically soar over Taiwan's landscapes. Super fun date activity! <b class="text-fuchsia-900">NT$480 <span class="text-fuchsia-600 font-semibold">(~S$20.00)</span></b>.</p>
                                         </div>
+                                    </div>
+                                </li>
 
-                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Raohe Night Market')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-emerald-700 border-[3px] border-white shadow-[0_0_0_2px_rgba(4,120,87,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition-colors">6:30 PM - Street Food Heaven</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Raohe Street Night Market</div>
+                                        
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm mt-3">
+                                            <div class="space-y-3">
                                                 <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Songshan Ciyou Temple');">
                                                     <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-vihara text-[10px]"></i></div>
                                                     <div>
@@ -365,6 +393,28 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- DAY 3 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-amber-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 3 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 22 (Sat)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-amber-200 via-amber-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Shifen Old Street')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-amber-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(245,158,11,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-amber-600 transition-colors">11:00 AM - Sky Lanterns</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Shifen Old Street</div>
+                                        <p class="mt-2 text-slate-600 leading-relaxed text-[13px]">Write your wishes and release a sky lantern on the active railway tracks. <b>Lantern: ~NT$250 (~S$10.40)</b></p>
                                     </div>
                                 </li>
 
@@ -411,6 +461,28 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- DAY 4 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-rose-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 4 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 23 (Sun)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-rose-200 via-rose-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('National Palace Museum')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-rose-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(244,63,94,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-rose-600 transition-colors">10:00 AM - Cultural Treasures</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">National Palace Museum</div>
+                                        <p class="mt-2 text-slate-600 leading-relaxed text-[13px]">Home to one of the largest collections of ancient Chinese imperial artifacts. Don't miss the Jadeite Cabbage!</p>
                                     </div>
                                 </li>
 
@@ -632,36 +704,36 @@
 
         // Data definition
         const locations = {
-            "Taoyuan International Airport": { coords: [25.0797, 121.2342], wiki: "Taoyuan_International_Airport", type: "transport", icon: "fa-plane" },
-            "Roaders Plus Hotel Taipei Station": { coords: [25.0463, 121.5152], wiki: "Taipei_Main_Station", type: "hotel", icon: "fa-bed" },
-            "Ximending Shopping District": { coords: [25.0435, 121.5073], wiki: "Ximending", type: "shopping", icon: "fa-bag-shopping" },
-            "Ay-Chung Flour-Rice Noodle": { coords: [25.0433, 121.5078], wiki: "Ximending", type: "food", icon: "fa-bowl-food" },
-            "Chiang Kai-shek Memorial Hall": { coords: [25.0347, 121.5218], wiki: "Chiang_Kai-shek_Memorial_Hall", type: "poi", icon: "fa-monument" },
-            "Taipei 101 & Din Tai Fung": { coords: [25.0336, 121.5646], wiki: "Taipei_101", type: "poi", icon: "fa-building" },
-            "Raohe Night Market": { coords: [25.0508, 121.5775], wiki: "Raohe_Street_Night_Market", type: "food", icon: "fa-store" },
-            "Shifen Old Street": { coords: [25.0409, 121.7770], wiki: "Shifen_railway_station", type: "poi", icon: "fa-fire-flame-curved" },
-            "Shifen Waterfall": { coords: [25.0489, 121.7877], wiki: "Shifen_Waterfall", type: "poi", icon: "fa-water" },
-            "Jiufen Old Street": { coords: [25.1099, 121.8451], wiki: "Jiufen", type: "poi", icon: "fa-mountain-city" },
-            "National Palace Museum": { coords: [25.1023, 121.5485], wiki: "National_Palace_Museum", type: "poi", icon: "fa-building-columns" },
-            "Dihua Street (Dadaocheng)": { coords: [25.0574, 121.5097], wiki: "Dihua_Street", type: "shopping", icon: "fa-shop" },
+            "Taoyuan International Airport": { coords: [25.0797, 121.2342], wiki: "Taoyuan_International_Airport", type: "transport", icon: "fa-plane", day: "D1/5" },
+            "Roaders Plus Hotel Taipei Station": { coords: [25.0463, 121.5152], wiki: "Taipei_Main_Station", type: "hotel", icon: "fa-bed", day: "D1" },
+            "Ximending Shopping District": { coords: [25.0435, 121.5073], wiki: "Ximending", type: "shopping", icon: "fa-bag-shopping", day: "D1" },
+            "Ay-Chung Flour-Rice Noodle": { coords: [25.0433, 121.5078], wiki: "Ximending", type: "food", icon: "fa-bowl-food", day: "D1" },
+            "Chiang Kai-shek Memorial Hall": { coords: [25.0347, 121.5218], wiki: "Chiang_Kai-shek_Memorial_Hall", type: "poi", icon: "fa-monument", day: "D2" },
+            "Taipei 101 & Din Tai Fung": { coords: [25.0336, 121.5646], wiki: "Taipei_101", type: "poi", icon: "fa-building", day: "D2" },
+            "Raohe Night Market": { coords: [25.0508, 121.5775], wiki: "Raohe_Street_Night_Market", type: "food", icon: "fa-store", day: "D2" },
+            "Shifen Old Street": { coords: [25.0409, 121.7770], wiki: "Shifen_railway_station", type: "poi", icon: "fa-fire-flame-curved", day: "D3" },
+            "Shifen Waterfall": { coords: [25.0489, 121.7877], wiki: "Shifen_Waterfall", type: "poi", icon: "fa-water", day: "D3" },
+            "Jiufen Old Street": { coords: [25.1099, 121.8451], wiki: "Jiufen", type: "poi", icon: "fa-mountain-city", day: "D3" },
+            "National Palace Museum": { coords: [25.1023, 121.5485], wiki: "National_Palace_Museum", type: "poi", icon: "fa-building-columns", day: "D4" },
+            "Dihua Street (Dadaocheng)": { coords: [25.0574, 121.5097], wiki: "Dihua_Street", type: "shopping", icon: "fa-shop", day: "D4" },
             
             // Nearby Locations
-            "Liu Shandong Beef Noodles": { coords: [25.0461, 121.5134], wiki: "Beef_noodle_soup", type: "nearby", icon: "fa-bowl-food" },
-            "Tiantianli Restaurant": { coords: [25.0441, 121.5052], wiki: "Minced_pork_rice", type: "nearby", icon: "fa-utensils" },
-            "Chun Shui Tang (CKS)": { coords: [25.0357, 121.5186], wiki: "Bubble_tea", type: "nearby", icon: "fa-mug-hot" },
-            "Four Four South Village": { coords: [25.0315, 121.5615], wiki: "Xinyi_Assembly_Hall", type: "nearby", icon: "fa-camera" },
-            "Songshan Ciyou Temple": { coords: [25.0509, 121.5779], wiki: "Songshan_Ciyou_Temple", type: "nearby", icon: "fa-vihara" },
-            "A-Mei Tea House": { coords: [25.1105, 121.8447], wiki: "Jiufen", type: "nearby", icon: "fa-mug-hot" },
-            "Silks Palace": { coords: [25.1020, 121.5492], wiki: "National_Palace_Museum", type: "nearby", icon: "fa-utensils" },
-            "Xia Hai City God Temple": { coords: [25.0560, 121.5100], wiki: "Xia-Hai_City_God_Temple", type: "nearby", icon: "fa-vihara" },
-            "Dadaocheng Wharf": { coords: [25.0573, 121.5065], wiki: "Dadaocheng", type: "nearby", icon: "fa-beer-mug-empty" },
+            "Liu Shandong Beef Noodles": { coords: [25.0461, 121.5134], wiki: "Beef_noodle_soup", type: "nearby", icon: "fa-bowl-food", day: "D1" },
+            "Tiantianli Restaurant": { coords: [25.0441, 121.5052], wiki: "Minced_pork_rice", type: "nearby", icon: "fa-utensils", day: "D1" },
+            "Chun Shui Tang (CKS)": { coords: [25.0357, 121.5186], wiki: "Bubble_tea", type: "nearby", icon: "fa-mug-hot", day: "D2" },
+            "Four Four South Village": { coords: [25.0315, 121.5615], wiki: "Xinyi_Assembly_Hall", type: "nearby", icon: "fa-camera", day: "D2" },
+            "Songshan Ciyou Temple": { coords: [25.0509, 121.5779], wiki: "Songshan_Ciyou_Temple", type: "nearby", icon: "fa-vihara", day: "D2" },
+            "A-Mei Tea House": { coords: [25.1105, 121.8447], wiki: "Jiufen", type: "nearby", icon: "fa-mug-hot", day: "D3" },
+            "Silks Palace": { coords: [25.1020, 121.5492], wiki: "National_Palace_Museum", type: "nearby", icon: "fa-utensils", day: "D4" },
+            "Xia Hai City God Temple": { coords: [25.0560, 121.5100], wiki: "Xia-Hai_City_God_Temple", type: "nearby", icon: "fa-vihara", day: "D4" },
+            "Dadaocheng Wharf": { coords: [25.0573, 121.5065], wiki: "Dadaocheng", type: "nearby", icon: "fa-beer-mug-empty", day: "D4" },
             
             // Activities
-            "Ximending Photo Booths": { coords: [25.0430, 121.5065], wiki: "Purikura", type: "activity", icon: "fa-camera-retro" },
-            "i-Ride TAIPEI": { coords: [25.0345, 121.5670], wiki: "Breeze_Center", type: "activity", icon: "fa-vr-cardboard" },
-            "Rainbow Bridge": { coords: [25.0519, 121.5760], wiki: "Rainbow_Bridge_(Taipei)", type: "activity", icon: "fa-bridge" },
-            "CHIPAO Rental": { coords: [25.1095, 121.8440], wiki: "Cheongsam", type: "activity", icon: "fa-shirt" },
-            "Dadaocheng Tandem Bikes": { coords: [25.0570, 121.5050], wiki: "Tandem_bicycle", type: "activity", icon: "fa-bicycle" }
+            "Ximending Photo Booths": { coords: [25.0430, 121.5065], wiki: "Purikura", type: "activity", icon: "fa-camera-retro", day: "D1" },
+            "i-Ride TAIPEI": { coords: [25.0345, 121.5670], wiki: "Breeze_Center", type: "activity", icon: "fa-vr-cardboard", day: "D2" },
+            "Rainbow Bridge": { coords: [25.0519, 121.5760], wiki: "Rainbow_Bridge_(Taipei)", type: "activity", icon: "fa-bridge", day: "D2" },
+            "CHIPAO Rental": { coords: [25.1095, 121.8440], wiki: "Cheongsam", type: "activity", icon: "fa-shirt", day: "D3" },
+            "Dadaocheng Tandem Bikes": { coords: [25.0570, 121.5050], wiki: "Tandem_bicycle", type: "activity", icon: "fa-bicycle", day: "D4" }
         };
 
         const markers = {};
@@ -674,7 +746,7 @@
                 case 'poi': return { bg: '#ec4899', size: 32 };
                 case 'transport': return { bg: '#64748b', size: 32 };
                 case 'nearby': return { bg: '#f43f5e', size: 24 };
-                case 'activity': return { bg: '#d946ef', size: 28 }; // Fuchsia for activities
+                case 'activity': return { bg: '#d946ef', size: 28 };
                 default: return { bg: '#64748b', size: 32 };
             }
         };
@@ -683,9 +755,12 @@
             const loc = locations[key];
             const style = getIconStyle(loc.type);
             
+            const dayBadge = loc.day ? `<div class="absolute -top-1.5 -right-2.5 bg-slate-900 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-[1.5px] border-white shadow-sm z-20 leading-none">${loc.day}</div>` : '';
+
             const customIcon = L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div class="marker-icon-container" style="background-color: ${style.bg}; width: ${style.size}px; height: ${style.size}px;">
+                html: `<div class="marker-icon-container relative" style="background-color: ${style.bg}; width: ${style.size}px; height: ${style.size}px;">
+                            ${dayBadge}
                             <i class="fa-solid ${loc.icon}" style="font-size: ${style.size === 24 ? '10px' : '14px'}"></i>
                        </div>`,
                 iconSize: [style.size, style.size],
@@ -774,6 +849,24 @@
         drawRoute(["Chiang Kai-shek Memorial Hall", "Taipei 101 & Din Tai Fung", "Raohe Night Market"], routeColors.day2);
         drawRoute(["Roaders Plus Hotel Taipei Station", "Shifen Old Street", "Shifen Waterfall", "Jiufen Old Street"], routeColors.day3);
         drawRoute(["National Palace Museum", "Dihua Street (Dadaocheng)", "Roaders Plus Hotel Taipei Station", "Taoyuan International Airport"], routeColors.day4);
+
+        // Add Floating Route Labels
+        const routeLabels = [
+            { coords: [25.0440, 121.5110], text: "Day 1", color: "text-indigo-600" },
+            { coords: [25.0390, 121.5450], text: "Day 2", color: "text-emerald-600" },
+            { coords: [25.0750, 121.7850], text: "Day 3", color: "text-amber-600" },
+            { coords: [25.0750, 121.5200], text: "Day 4", color: "text-rose-600" }
+        ];
+
+        routeLabels.forEach(label => {
+            const labelIcon = L.divIcon({
+                className: 'route-label',
+                html: `<div class="bg-white/95 backdrop-blur px-2 py-0.5 rounded shadow-sm border border-gray-100 font-bold text-[10px] uppercase tracking-wider ${label.color}">${label.text}</div>`,
+                iconSize: [45, 20],
+                iconAnchor: [22, 10]
+            });
+            L.marker(label.coords, {icon: labelIcon, interactive: false, zIndexOffset: -50}).addTo(map);
+        });
 
         const group = new L.featureGroup(Object.values(markers));
         map.fitBounds(group.getBounds().pad(0.1));
