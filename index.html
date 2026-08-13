@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Taipei Couples Escape</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Premium Map Popup Styling */
+        .custom-popup .leaflet-popup-content-wrapper { 
+            border-radius: 16px; 
+            padding: 0; 
+            overflow: hidden; 
+            border: 1px solid rgba(255,255,255,0.8); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); 
+            background: #ffffff;
+        }
+        .custom-popup .leaflet-popup-content { margin: 0; width: 280px !important; }
+        .custom-popup .leaflet-popup-tip-container { display: none; }
+        
+        /* Shimmer Loading Effect for Images */
+        .shimmer {
+            background: #f6f7f8;
+            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-repeat: no-repeat;
+            background-size: 800px 100%; 
+            animation-duration: 1.5s;
+            animation-fill-mode: forwards; 
+            animation-iteration-count: infinite;
+            animation-name: placeholderShimmer;
+            animation-timing-function: linear;
+        }
+        @keyframes placeholderShimmer {
+            0% { background-position: -468px 0; }
+            100% { background-position: 468px 0; }
+        }
+
+        /* Force popup button styling to bypass Leaflet defaults */
+        .custom-popup .popup-btn { 
+            color: #ffffff !important; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important; 
+            font-weight: 600; 
+            font-size: 0.95rem; 
+            padding: 0.85rem; 
+            border-radius: 0.75rem; 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            text-decoration: none;
+            margin-top: 0.75rem;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            box-sizing: border-box;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+        }
+        .custom-popup .popup-btn:active { transform: scale(0.98); }
+
+        /* Custom Map Marker Icons */
+        .marker-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            color: white;
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+        .leaflet-marker-icon:hover .marker-icon-container {
+            transform: scale(1.15);
+        }
+
+        /* Scrollbars */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Navigation Tabs */
+        .tab-btn { position: relative; }
+        .tab-btn::after { 
+            content: ''; 
+            position: absolute; 
+            bottom: -1px; 
+            left: 0; 
+            width: 100%; 
+            height: 3px; 
+            background-color: transparent; 
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            border-radius: 3px 3px 0 0;
+            transform: scaleX(0.7);
+        }
+        .tab-btn.active { color: #4f46e5; }
+        .tab-btn.active::after { background-color: #4f46e5; transform: scaleX(1); }
+        
+        /* Animations */
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <div class="flex flex-col md:flex-row h-[100dvh] w-full overflow-hidden">
+        
+        <!-- Left/Top Panel: Map -->
+        <div id="map-container" class="w-full h-[40dvh] md:h-full md:w-5/12 lg:w-1/2 relative z-20 flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-200 bg-gray-100 shadow-inner">
+            <div id="map" class="w-full h-full z-10"></div>
+            
+            <button onclick="locateUser()" class="absolute bottom-5 right-5 z-[1000] bg-white text-slate-800 px-4 py-3 sm:px-5 sm:py-3.5 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 hover:bg-gray-50 transition-all font-semibold flex items-center gap-2 group hover:scale-105 active:scale-95">
+                <i id="find-me-icon" class="fa-solid fa-location-crosshairs text-indigo-600 text-lg group-hover:rotate-90 transition-transform duration-500"></i> 
+                <span class="text-sm">Find Me</span>
+            </button>
+        </div>
+
+        <!-- Right/Bottom Panel: Content Area -->
+        <div class="w-full h-[60dvh] md:h-full md:w-7/12 lg:w-1/2 overflow-y-auto scroll-smooth hide-scrollbar relative z-10 bg-[#fafafa] pb-16">
+            
+            <!-- Header Section with background image -->
+            <header class="relative bg-slate-900 text-white overflow-hidden pb-10 pt-12 px-6 sm:px-10">
+                <div class="absolute inset-0 opacity-50 bg-cover bg-center mix-blend-overlay" style="background-image: url('image_b6cb3b.png');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/30"></div>
+                
+                <div class="relative z-10 max-w-2xl mx-auto">
+                    <span class="inline-block py-1.5 px-3.5 rounded-full bg-white/10 text-white text-xs font-bold tracking-widest uppercase mb-4 border border-white/20 backdrop-blur-md shadow-lg">Aug 20 - Aug 24, 2026</span>
+                    <h1 class="text-4xl sm:text-5xl font-extrabold mb-3 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200">Taipei Escape</h1>
+                    <p class="text-indigo-100 text-sm sm:text-base flex items-center gap-2 mb-8 font-medium">
+                        <i class="fa-solid fa-hotel text-indigo-300"></i> Roaders Plus Hotel Taipei Station
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
+                        <!-- Flight Info Cards -->
+                        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-xl relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-500/20 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150"></div>
+                            <div class="flex items-center gap-2 text-indigo-300 text-[10px] mb-2 font-bold uppercase tracking-wider relative z-10">
+                                <i class="fa-solid fa-plane-arrival"></i> Arrival (Scoot TR892)
+                            </div>
+                            <div class="font-bold text-lg text-white relative z-10">Aug 20, 11:45 AM</div>
+                            <div class="text-xs text-slate-300 font-medium mt-1 relative z-10">SIN <i class="fa-solid fa-plane text-indigo-400 mx-1.5 text-[10px]"></i> TPE</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-xl relative overflow-hidden group">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-rose-500/20 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150"></div>
+                            <div class="flex items-center gap-2 text-rose-300 text-[10px] mb-2 font-bold uppercase tracking-wider relative z-10">
+                                <i class="fa-solid fa-plane-departure"></i> Departure (Scoot TR873)
+                            </div>
+                            <div class="font-bold text-lg text-white relative z-10">Aug 24, 01:35 AM</div>
+                            <div class="text-xs text-slate-300 font-medium mt-1 relative z-10">TPE <i class="fa-solid fa-plane text-rose-400 mx-1.5 text-[10px]"></i> SIN</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <nav class="sticky top-0 z-40 bg-white/90 backdrop-blur-lg border-b border-gray-200 px-4 sm:px-10 overflow-x-auto shadow-sm">
+                <ul class="flex space-x-6 sm:space-x-8 text-sm w-max max-w-full">
+                    <li>
+                        <button onclick="switchTab('itinerary')" id="tab-btn-itinerary" class="tab-btn active text-indigo-700 py-4 px-1 whitespace-nowrap outline-none font-bold">
+                            <i class="fa-solid fa-map-location-dot mr-1.5"></i> Itinerary
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="switchTab('apps')" id="tab-btn-apps" class="tab-btn text-gray-500 hover:text-gray-900 py-4 px-1 whitespace-nowrap outline-none font-medium">
+                            <i class="fa-solid fa-mobile-screen mr-1.5"></i> Transit & Apps
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="switchTab('costs')" id="tab-btn-costs" class="tab-btn text-gray-500 hover:text-gray-900 py-4 px-1 whitespace-nowrap outline-none font-medium">
+                            <i class="fa-solid fa-receipt mr-1.5"></i> Hidden Costs
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <main class="p-5 sm:p-10 max-w-2xl mx-auto">
+                
+                <div id="tab-itinerary" class="tab-content block space-y-12">
+                    
+                    <!-- DAY 1 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-indigo-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 1 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 20 (Thu)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <!-- Timeline Line -->
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-indigo-200 via-indigo-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <!-- Stop 1: Airport -->
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Taoyuan International Airport')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-indigo-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(99,102,241,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-indigo-600 transition-colors">11:45 AM - Touchdown</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Taoyuan International Airport (TPE)</div>
+                                        <div class="mt-3 bg-indigo-50/80 rounded-xl p-3.5 border border-indigo-100/50">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-circle-info text-indigo-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Withdraw NTD cash at the ATM. Buy your EasyCard at the MRT station entrance before boarding.</p>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- Transit: MRT to City -->
+                                <li class="ml-4 border-l-[3px] border-dashed border-indigo-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Taoyuan+International+Airport&destination=Taipei+Main+Station&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden relative">
+                                        <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover:scale-125 pointer-events-none"></div>
+                                        <div class="p-4">
+                                            <div class="flex justify-between items-start mb-3 relative z-10">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-train text-indigo-400"></i></div> Airport MRT (Purple Express)</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">NT$150 <span class="text-indigo-300 font-semibold text-sm">(~S$6.25)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~40 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px] relative z-10">Use EasyCard. Take the <b>Purple Express</b> train (skip the blue commuter) directly to A1 Taipei Main Station.</span>
+                                            <div class="inline-flex items-center text-white bg-indigo-500 hover:bg-indigo-600 shadow-md shadow-indigo-500/20 transition px-4 py-2 rounded-lg text-xs font-bold relative z-10">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <!-- Stop 2: Hotel -->
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Roaders Plus Hotel Taipei Station')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-indigo-600 border-[3px] border-white shadow-[0_0_0_2px_rgba(79,70,229,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-indigo-600 transition-colors">1:30 PM - Check-in</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Roaders Plus Hotel Taipei Station</div>
+                                        
+                                        <div class="mt-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Liu Shandong Beef Noodles');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-bowl-food text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Liu Shandong Beef Noodles</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Michelin Bib Gourmand beef noodles. Extremely famous hidden gem. <b class="text-slate-800">NT$170 <span class="text-indigo-600">(~S$7.10)</span></b></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- Transit: MRT to Ximen -->
+                                <li class="ml-4 border-l-[3px] border-dashed border-indigo-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Taipei+Main+Station&destination=Ximen+Station&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group relative overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-train-subway text-blue-400"></i></div> Blue (Bannan) Line</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">NT$20 <span class="text-indigo-300 font-semibold text-sm">(~S$0.85)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~5 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Tap EasyCard. Take the Blue Line (towards Dingpu) just 1 stop to Ximen Stn.</span>
+                                            <div class="inline-flex items-center text-white bg-indigo-500 hover:bg-indigo-600 shadow-md shadow-indigo-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <!-- Stop 3: Ximending -->
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Ximending Shopping District')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-indigo-400 border-[3px] border-white shadow-[0_0_0_2px_rgba(129,140,248,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-indigo-600 transition-colors">2:30 PM - Harajuku of Taipei</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Ximending Shopping District</div>
+                                        
+                                        <div class="mt-3 bg-indigo-50/80 rounded-xl p-3.5 border border-indigo-100/50 mb-3">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-gamepad text-indigo-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Most claw machines cost NT$10 <span class="font-semibold text-indigo-600">(~S$0.40)</span> per play. Prepare coins! Keep cash for street food.</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Tiantianli Restaurant');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-utensils text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Tiantianli Restaurant</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Braised pork rice with fried egg. Highly rated by locals. <b class="text-slate-800">NT$70 <span class="text-indigo-600">(~S$2.90)</span></b></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- Transit: Walk -->
+                                <li class="ml-4 border-l-[3px] border-dashed border-indigo-200 pl-6 py-4 my-2 relative z-0">
+                                    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                                        <div class="flex justify-between items-center">
+                                            <strong class="text-slate-700 text-sm flex items-center"><div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center mr-3"><i class="fa-solid fa-person-walking text-slate-500"></i></div> Walk & Explore</strong>
+                                            <div class="text-right">
+                                                <span class="block font-bold text-slate-800 text-sm">Free</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <!-- Stop 4: Noodle -->
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Ay-Chung Flour-Rice Noodle')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-indigo-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(99,102,241,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-indigo-600 transition-colors">4:00 PM - Local Snack</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Ay-Chung Flour-Rice Noodle</div>
+                                        <p class="mt-2 text-slate-600 leading-relaxed text-sm">Large bowl <b class="text-slate-800">NT$75 <span class="text-indigo-600">(~S$3.10)</span></b>. Eat it standing up! Add vinegar, garlic, and chili.</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- DAY 2 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-emerald-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 2 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 21 (Fri)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-emerald-200 via-emerald-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Chiang Kai-shek Memorial Hall')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(16,185,129,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition-colors">10:00 AM - Culture & History</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Chiang Kai-shek Memorial Hall</div>
+                                        
+                                        <div class="mt-3 bg-emerald-50/80 rounded-xl p-3.5 border border-emerald-100/50 mb-3">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-camera text-emerald-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Entry is Free. Watch the changing of the guard ceremony which happens exactly on the hour, every hour.</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Chun Shui Tang (CKS)');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-mug-hot text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Chun Shui Tang</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Inventors of Bubble Tea! Located inside the Concert Hall. <b class="text-slate-800">~NT$190 <span class="text-emerald-600">(~S$8.00)</span></b></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="ml-4 border-l-[3px] border-dashed border-emerald-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Chiang+Kai-shek+Memorial+Hall+Station&destination=Taipei+101/World+Trade+Center+Station&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-train-subway text-red-400"></i></div> Red (Tamsui-Xinyi) Line</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">NT$20 <span class="text-emerald-300 font-semibold text-sm">(~S$0.85)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~15 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Tap EasyCard. Direct line from Chiang Kai-shek Stn (towards Xiangshan) to Taipei 101 Stn.</span>
+                                            <div class="inline-flex items-center text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Taipei 101 & Din Tai Fung')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-emerald-600 border-[3px] border-white shadow-[0_0_0_2px_rgba(5,150,105,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition-colors">12:30 PM - Views & Xiaolongbao</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Taipei 101 & Din Tai Fung</div>
+                                        
+                                        <div class="mt-3 bg-emerald-50/80 rounded-xl p-3.5 border border-emerald-100/50 mb-3">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-utensils text-emerald-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Din Tai Fung (B1 floor) has a 60-90 min wait. Get your queue number <b>first</b>, then shop. Meal: <b class="text-slate-800">~NT$700/pax <span class="text-emerald-600">(~S$29)</span></b>.</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Four Four South Village');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-camera text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Four Four South Village</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Historic military village. Offers the best unobstructed photo angle of Taipei 101. Free.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="ml-4 border-l-[3px] border-dashed border-emerald-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Taipei+101&destination=Raohe+Street+Night+Market&travelmode=driving" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center mr-3"><i class="fa-brands fa-uber text-white"></i></div> Uber / Taxi</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">~NT$180 <span class="text-emerald-300 font-semibold text-sm">(~S$7.50)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~15 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Taxi is recommended here to avoid multiple MRT transfers. Book via Uber app.</span>
+                                            <div class="inline-flex items-center text-white bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Raohe Night Market')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-emerald-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(16,185,129,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-emerald-600 transition-colors">6:30 PM - Dinner & Vibes</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Raohe Night Market</div>
+                                        
+                                        <div class="mt-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Songshan Ciyou Temple');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-vihara text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Songshan Ciyou Temple</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Stunning 6-story temple at the market entrance. Spectacularly lit up at night. Free.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- DAY 3 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-amber-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 3 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 22 (Sat)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-amber-200 via-amber-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="ml-4 border-l-[3px] border-dashed border-amber-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Taipei+Main+Station&destination=Shifen+Station&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-train text-amber-400"></i></div> TRA Train (to Shifen)</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">~NT$68 <span class="text-amber-300 font-semibold text-sm">(~S$2.85)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~1h 20m</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Tap EasyCard at Taipei Main Stn. Take Eastbound train to <b>Ruifang Station</b>, then transfer to the Pingxi Line to <b>Shifen Stn</b>.</span>
+                                            <div class="inline-flex items-center text-slate-900 bg-amber-400 hover:bg-amber-500 shadow-md shadow-amber-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Shifen Old Street')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-amber-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(245,158,11,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-amber-600 transition-colors">11:00 AM - Sky Lanterns</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Shifen Old Street</div>
+                                        
+                                        <div class="mt-3 bg-amber-50/80 rounded-xl p-3.5 border border-amber-100/50 mb-3">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-fire-flame-curved text-amber-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Lantern prices: Single color <b class="text-slate-800">~NT$200 <span class="text-amber-600">(~S$8.30)</span></b>. Vendors will help you take photos & videos for free!</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Shifen Waterfall');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-water text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Shifen Waterfall</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">The "Niagara of Taiwan". Beautiful 20-min scenic walk from the old street. Free.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="ml-4 border-l-[3px] border-dashed border-amber-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Shifen+Station&destination=Jiufen+Old+Street&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-bus text-amber-400"></i></div> Train + Bus (to Jiufen)</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">~NT$34 <span class="text-amber-300 font-semibold text-sm">(~S$1.40)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~50 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Pingxi train back to Ruifang Stn (NT$19). Exit stn, turn left, walk 200m. Take Bus 788, 827, or 1062 up to Jiufen (NT$15).</span>
+                                            <div class="inline-flex items-center text-slate-900 bg-amber-400 hover:bg-amber-500 shadow-md shadow-amber-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Jiufen Old Street')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-amber-600 border-[3px] border-white shadow-[0_0_0_2px_rgba(217,119,6,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-amber-600 transition-colors">3:30 PM - Spirited Away Vibes</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Jiufen Old Street</div>
+                                        
+                                        <div class="mt-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('A-Mei Tea House');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-mug-hot text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">A-Mei Tea House</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Iconic teahouse that inspired Spirited Away. Tea sets <b class="text-slate-800">~NT$300 <span class="text-amber-600">(~S$12.50)</span></b>.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- DAY 4 -->
+                    <section>
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-rose-100 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 4 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 23 (Sun)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <div class="absolute left-[15px] top-4 bottom-4 w-[3px] bg-gradient-to-b from-rose-200 via-rose-100 to-transparent z-0 rounded-full"></div>
+                            
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('National Palace Museum')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-rose-500 border-[3px] border-white shadow-[0_0_0_2px_rgba(244,63,94,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-rose-600 transition-colors">10:00 AM - Imperial Treasures</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">National Palace Museum</div>
+                                        
+                                        <div class="mt-3 bg-rose-50/80 rounded-xl p-3.5 border border-rose-100/50 mb-3">
+                                            <h4 class="font-bold text-slate-700 text-xs uppercase tracking-wider mb-1"><i class="fa-solid fa-ticket text-rose-500 mr-1.5"></i> Traveler Info</h4>
+                                            <p class="text-slate-600 mb-0">Tickets: <b class="text-slate-800">NT$350 <span class="text-rose-600">(~S$14.50)</span></b>. Must-sees: Jadeite Cabbage & Meat-shaped Stone.</p>
+                                        </div>
+
+                                        <div class="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Silks Palace');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-utensils text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Silks Palace</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Famous for creating dishes that look exactly like the museum artifacts! <b class="text-slate-800">~NT$500+ <span class="text-rose-600">(~S$21+)</span></b>.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="ml-4 border-l-[3px] border-dashed border-rose-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=National+Palace+Museum&destination=Dihua+Street&travelmode=driving" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center mr-3"><i class="fa-brands fa-uber text-white"></i></div> Uber / Taxi</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">~NT$250 <span class="text-rose-300 font-semibold text-sm">(~S$10.40)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~20 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Transit requires multiple buses. Save time by taking an Uber straight there.</span>
+                                            <div class="inline-flex items-center text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Dihua Street (Dadaocheng)')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-rose-600 border-[3px] border-white shadow-[0_0_0_2px_rgba(225,29,72,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-rose-600 transition-colors">2:00 PM - Retro Taipei</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Dihua Street (Dadaocheng)</div>
+                                        
+                                        <div class="mt-3 bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3 flex items-center"><i class="fa-solid fa-location-crosshairs text-rose-500 mr-2"></i> Nearby (< 500m)</h4>
+                                            <div class="space-y-3">
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Xia Hai City God Temple');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-vihara text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Xia Hai City God Temple</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Famous Matchmaker God. Couples pray here for a smooth relationship! Free.</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg transition-colors group/item" onclick="event.stopPropagation(); focusMapOn('Dadaocheng Wharf');">
+                                                    <div class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0 group-hover/item:bg-rose-500 group-hover/item:text-white transition-colors"><i class="fa-solid fa-beer-mug-empty text-[10px]"></i></div>
+                                                    <div>
+                                                        <span class="text-slate-800 font-bold block mb-0.5">Dadaocheng Wharf</span>
+                                                        <span class="text-slate-600 text-xs block leading-relaxed">Riverside containers. Grab a beer at sunset before heading to the airport. <b class="text-slate-800">~NT$200 <span class="text-rose-600">(~S$8.30)</span></b>.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+
+                                <li class="ml-4 border-l-[3px] border-dashed border-rose-200 pl-6 py-4 my-2 relative z-0">
+                                    <a href="https://www.google.com/maps/dir/?api=1&origin=Taipei+Main+Station&destination=Taoyuan+International+Airport&travelmode=transit" target="_blank" class="block bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-4.5 border border-slate-700/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden">
+                                        <div class="p-4 relative z-10">
+                                            <div class="flex justify-between items-start mb-3">
+                                                <strong class="text-white text-base flex items-center"><div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center mr-3"><i class="fa-solid fa-train text-indigo-400"></i></div> Airport MRT (Purple)</strong>
+                                                <div class="text-right">
+                                                    <span class="block font-bold text-white text-base">NT$150 <span class="text-rose-300 font-semibold text-sm">(~S$6.25)</span></span>
+                                                    <span class="text-xs text-slate-400 font-medium flex items-center justify-end mt-0.5"><i class="fa-regular fa-clock mr-1"></i> ~40 mins</span>
+                                                </div>
+                                            </div>
+                                            <span class="block text-slate-300 leading-relaxed mb-4 text-[13px]">Collect luggage. Tap EasyCard. <b class="text-rose-400">Must catch train before 11:00 PM for arrival before midnight.</b></span>
+                                            <div class="inline-flex items-center text-white bg-rose-600 hover:bg-rose-700 shadow-md shadow-rose-500/20 transition px-4 py-2 rounded-lg text-xs font-bold">
+                                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Open in Maps
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+
+                                <li class="flex cursor-pointer hover:bg-white p-3 rounded-xl transition-all shadow-sm hover:shadow-md border border-transparent hover:border-gray-100 group relative z-10" onclick="focusMapOn('Taoyuan International Airport')">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-3.5 h-3.5 rounded-full bg-slate-400 border-[3px] border-white shadow-[0_0_0_2px_rgba(148,163,184,0.2)]"></div></div>
+                                    <div class="flex-grow pt-0.5">
+                                        <div class="font-bold text-slate-900 text-lg group-hover:text-slate-600 transition-colors">10:30 PM - Arrive at Airport</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Taoyuan International Airport (TPE)</div>
+                                        <p class="mt-2 text-slate-600 leading-relaxed text-sm">Check-in for your late-night flight (Scoot counters open 3 hrs before departure).</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                    
+                    <section class="opacity-70">
+                        <h2 class="text-2xl font-bold text-slate-900 border-b-2 border-slate-200 pb-3 mb-6 flex items-baseline justify-between">
+                            <span>Day 5 <span class="text-slate-400 font-medium text-sm sm:text-base ml-2">Aug 24 (Mon)</span></span>
+                        </h2>
+                        
+                        <div class="relative">
+                            <ul class="space-y-2 text-sm">
+                                <li class="flex p-3 rounded-xl relative z-10">
+                                    <div class="w-8 flex-shrink-0 flex justify-center mt-1"><div class="w-8 h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center -ml-2.5"><i class="fa-solid fa-plane-departure text-sm"></i></div></div>
+                                    <div class="flex-grow pt-1">
+                                        <div class="font-bold text-slate-900 text-lg">01:35 AM - Departure</div>
+                                        <div class="text-slate-500 font-medium mt-0.5">Flight TR873 to Singapore</div>
+                                        <p class="mt-2 text-slate-600 leading-relaxed text-sm">Safe travels back home!</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="tab-apps" class="tab-content hidden space-y-8 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Transit Cards & Smart Apps</h2>
+                        <p class="text-slate-500 mb-6 font-medium">Download these before you fly for a seamless, cashless, and stress-free trip.</p>
+                        
+                        <div class="grid gap-5">
+                            <div class="bg-white border border-blue-100 rounded-2xl p-5 sm:p-6 flex gap-5 items-start shadow-sm hover:shadow-md transition-shadow">
+                                <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0 text-2xl border border-blue-100">
+                                    <i class="fa-solid fa-credit-card"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">EasyCard (悠遊卡) <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Essential</span></h3>
+                                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">The absolute essential. Works on MRT, TRA trains, buses, convenience stores (7-11, FamilyMart), and YouBike.</p>
+                                    <div class="mt-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <span class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Where to buy</span>
+                                        <p class="text-sm text-slate-700 font-medium">Ticket vending machines right before the MRT gates at Airport Terminal 1/2. Card fee is <b class="text-blue-700">NT$100 (~S$4.15)</b> plus top up (start with NT$500).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 flex gap-5 items-start shadow-sm hover:shadow-md transition-shadow">
+                                <div class="w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center flex-shrink-0 text-2xl">
+                                    <i class="fa-brands fa-uber"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-lg">Uber / FindTaxi</h3>
+                                    <p class="text-sm text-slate-600 mt-2 leading-relaxed">Uber works perfectly in Taipei (billed in NTD to your card). <b>FindTaxi (呼叫小黃)</b> is a great local alternative that calls metered yellow cabs if Uber surge pricing is high.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-costs" class="tab-content hidden space-y-8 animate-fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Hidden Costs Audit</h2>
+                        <p class="text-slate-500 mb-6 font-medium">Keep these in mind while budgeting. (Calculated at approx S$1 = NT$24).</p>
+
+                        <div class="grid gap-4">
+                            <div class="bg-white border border-amber-200 p-5 rounded-2xl shadow-sm flex items-start gap-4">
+                                <div class="bg-amber-50 text-amber-500 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bag-shopping"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Plastic Bag Fee</h3>
+                                    <p class="text-sm text-slate-600 mt-1">Convenience stores and supermarkets charge <b class="text-amber-600">NT$1-NT$3 (~S$0.05-0.15)</b> per bag. Bring a tote!</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-indigo-200 p-5 rounded-2xl shadow-sm flex items-start gap-4">
+                                <div class="bg-indigo-50 text-indigo-500 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-utensils"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">10% Service Charge</h3>
+                                    <p class="text-sm text-slate-600 mt-1">Most sit-down restaurants (like Din Tai Fung) add a mandatory 10% service charge to your bill. Tipping beyond this is NOT expected.</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-emerald-200 p-5 rounded-2xl shadow-sm flex items-start gap-4">
+                                <div class="bg-emerald-50 text-emerald-500 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-mug-hot"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Cafe Minimum Spend</h3>
+                                    <p class="text-sm text-slate-600 mt-1">Many aesthetic cafes have a "Minimum One Drink per Person" rule, usually around <b class="text-emerald-600">NT$150 (~S$6.25)</b>, even if you order desserts.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white border border-rose-200 p-5 rounded-2xl shadow-sm flex items-start gap-4">
+                                <div class="bg-rose-50 text-rose-500 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-money-bill-wave"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900">Night Market Cash</h3>
+                                    <p class="text-sm text-slate-600 mt-1">90% of night market stalls and old street vendors strictly take cash only. Always have NT$100 notes and coins ready.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+            
+            <!-- Toast Notification -->
+            <div id="toast-container" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] transition-transform duration-300 translate-y-24 opacity-0 pointer-events-none">
+                <div class="bg-slate-900/95 backdrop-blur-md text-white px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium flex items-center gap-3 w-max max-w-[90vw] border border-slate-700">
+                    <i class="fa-solid fa-circle-exclamation text-rose-400 text-lg"></i>
+                    <span id="toast-text">Message</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'text-indigo-700', 'font-bold');
+                el.classList.add('text-gray-500', 'font-medium');
+            });
+            
+            const content = document.getElementById('tab-' + tabId);
+            if(content) content.classList.remove('hidden');
+            
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.add('active', 'text-indigo-700', 'font-bold');
+                activeBtn.classList.remove('text-gray-500', 'font-medium');
+            }
+        }
+
+        // Initialize Map
+        const map = L.map('map', { zoomControl: false }).setView([25.0478, 121.5170], 12);
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri', maxZoom: 18
+        }).addTo(map);
+
+        // Data definition
+        const locations = {
+            "Taoyuan International Airport": { coords: [25.0797, 121.2342], wiki: "Taoyuan_International_Airport", type: "transport", icon: "fa-plane" },
+            "Roaders Plus Hotel Taipei Station": { coords: [25.0463, 121.5152], wiki: "Taipei_Main_Station", type: "hotel", icon: "fa-bed" },
+            "Ximending Shopping District": { coords: [25.0435, 121.5073], wiki: "Ximending", type: "shopping", icon: "fa-bag-shopping" },
+            "Ay-Chung Flour-Rice Noodle": { coords: [25.0433, 121.5078], wiki: "Ximending", type: "food", icon: "fa-bowl-food" },
+            "Chiang Kai-shek Memorial Hall": { coords: [25.0347, 121.5218], wiki: "Chiang_Kai-shek_Memorial_Hall", type: "poi", icon: "fa-monument" },
+            "Taipei 101 & Din Tai Fung": { coords: [25.0336, 121.5646], wiki: "Taipei_101", type: "poi", icon: "fa-building" },
+            "Raohe Night Market": { coords: [25.0508, 121.5775], wiki: "Raohe_Street_Night_Market", type: "food", icon: "fa-store" },
+            "Shifen Old Street": { coords: [25.0409, 121.7770], wiki: "Shifen_railway_station", type: "poi", icon: "fa-fire-flame-curved" },
+            "Shifen Waterfall": { coords: [25.0489, 121.7877], wiki: "Shifen_Waterfall", type: "poi", icon: "fa-water" },
+            "Jiufen Old Street": { coords: [25.1099, 121.8451], wiki: "Jiufen", type: "poi", icon: "fa-mountain-city" },
+            "National Palace Museum": { coords: [25.1023, 121.5485], wiki: "National_Palace_Museum", type: "poi", icon: "fa-building-columns" },
+            "Dihua Street (Dadaocheng)": { coords: [25.0574, 121.5097], wiki: "Dihua_Street", type: "shopping", icon: "fa-shop" },
+            
+            // Nearby Locations
+            "Liu Shandong Beef Noodles": { coords: [25.0461, 121.5134], wiki: "Beef_noodle_soup", type: "nearby", icon: "fa-bowl-food" },
+            "Tiantianli Restaurant": { coords: [25.0441, 121.5052], wiki: "Minced_pork_rice", type: "nearby", icon: "fa-utensils" },
+            "Chun Shui Tang (CKS)": { coords: [25.0357, 121.5186], wiki: "Bubble_tea", type: "nearby", icon: "fa-mug-hot" },
+            "Four Four South Village": { coords: [25.0315, 121.5615], wiki: "Xinyi_Assembly_Hall", type: "nearby", icon: "fa-camera" },
+            "Songshan Ciyou Temple": { coords: [25.0509, 121.5779], wiki: "Songshan_Ciyou_Temple", type: "nearby", icon: "fa-vihara" },
+            "A-Mei Tea House": { coords: [25.1105, 121.8447], wiki: "Jiufen", type: "nearby", icon: "fa-mug-hot" },
+            "Silks Palace": { coords: [25.1020, 121.5492], wiki: "National_Palace_Museum", type: "nearby", icon: "fa-utensils" },
+            "Xia Hai City God Temple": { coords: [25.0560, 121.5100], wiki: "Xia-Hai_City_God_Temple", type: "nearby", icon: "fa-vihara" },
+            "Dadaocheng Wharf": { coords: [25.0573, 121.5065], wiki: "Dadaocheng", type: "nearby", icon: "fa-beer-mug-empty" }
+        };
+
+        const markers = {};
+
+        const getIconStyle = (type) => {
+            switch(type) {
+                case 'hotel': return { bg: '#4f46e5', size: 32 };
+                case 'food': return { bg: '#f59e0b', size: 32 };
+                case 'shopping': return { bg: '#10b981', size: 32 };
+                case 'poi': return { bg: '#ec4899', size: 32 };
+                case 'transport': return { bg: '#64748b', size: 32 };
+                case 'nearby': return { bg: '#f43f5e', size: 24 };
+                default: return { bg: '#64748b', size: 32 };
+            }
+        };
+
+        Object.keys(locations).forEach(key => {
+            const loc = locations[key];
+            const style = getIconStyle(loc.type);
+            
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="marker-icon-container" style="background-color: ${style.bg}; width: ${style.size}px; height: ${style.size}px;">
+                            <i class="fa-solid ${loc.icon}" style="font-size: ${style.size === 24 ? '10px' : '14px'}"></i>
+                       </div>`,
+                iconSize: [style.size, style.size],
+                iconAnchor: [style.size/2, style.size/2]
+            });
+
+            const marker = L.marker(loc.coords, {icon: customIcon}).addTo(map);
+            
+            const safeId = 'img-' + key.replace(/[^a-zA-Z0-9]/g, '');
+            const safeContainerId = 'img-container-' + key.replace(/[^a-zA-Z0-9]/g, '');
+            
+            const popupContent = `
+                <div class="font-sans relative">
+                    <div id="${safeContainerId}" class="w-full h-36 relative bg-slate-100 overflow-hidden rounded-t-2xl">
+                        <!-- Shimmer Skeleton -->
+                        <div id="${safeId}-shimmer" class="absolute inset-0 shimmer z-10"></div>
+                        <!-- Actual Image (Hidden until loaded) -->
+                        <img id="${safeId}" src="" alt="${key}" class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 z-20">
+                        
+                        <!-- Fallback Gradient (Shown if no image found) -->
+                        <div id="${safeId}-fallback" class="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center opacity-0 z-0">
+                            <i class="fa-solid fa-image text-slate-400 text-3xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white">
+                        <h4 class="font-bold text-slate-800 text-base mb-1 leading-tight">${key}</h4>
+                        <button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(key)}', '_blank');" class="popup-btn">
+                            <i class="fa-solid fa-map-location-dot"></i> View in Maps
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent, { className: 'custom-popup', offset: [0, -10] });
+            
+            // Dynamic Wikipedia Image Fetching
+            marker.on('popupopen', () => {
+                const imgEl = document.getElementById(safeId);
+                const shimmerEl = document.getElementById(safeId + '-shimmer');
+                const fallbackEl = document.getElementById(safeId + '-fallback');
+                
+                if (!imgEl) return;
+
+                if (loc.cachedImg) {
+                    // Load instantly if cached
+                    imgEl.src = loc.cachedImg;
+                    imgEl.onload = () => {
+                        imgEl.classList.remove('opacity-0');
+                        if(shimmerEl) shimmerEl.style.display = 'none';
+                    };
+                } else if (loc.wiki) {
+                    // Fetch from Wikipedia
+                    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${loc.wiki}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.thumbnail && data.thumbnail.source) {
+                                imgEl.src = data.thumbnail.source;
+                                loc.cachedImg = data.thumbnail.source;
+                                imgEl.onload = () => {
+                                    imgEl.classList.remove('opacity-0');
+                                    if(shimmerEl) shimmerEl.style.opacity = '0';
+                                    setTimeout(() => { if(shimmerEl) shimmerEl.style.display = 'none'; }, 500);
+                                };
+                            } else {
+                                throw new Error('No image in Wiki response');
+                            }
+                        })
+                        .catch(err => {
+                            // Fallback if failed
+                            if(shimmerEl) shimmerEl.style.display = 'none';
+                            if(fallbackEl) fallbackEl.classList.remove('opacity-0');
+                        });
+                }
+            });
+            
+            markers[key] = marker;
+        });
+
+        const routeColors = { day1: '#4f46e5', day2: '#10b981', day3: '#f59e0b', day4: '#e11d48' };
+        const drawRoute = (locationKeys, color) => {
+            const coords = locationKeys.map(key => locations[key].coords);
+            L.polyline(coords, { color: color, weight: 3, opacity: 0.5, dashArray: '8, 8', lineJoin: 'round' }).addTo(map);
+        };
+
+        drawRoute(["Taoyuan International Airport", "Roaders Plus Hotel Taipei Station", "Ximending Shopping District", "Ay-Chung Flour-Rice Noodle"], routeColors.day1);
+        drawRoute(["Chiang Kai-shek Memorial Hall", "Taipei 101 & Din Tai Fung", "Raohe Night Market"], routeColors.day2);
+        drawRoute(["Roaders Plus Hotel Taipei Station", "Shifen Old Street", "Shifen Waterfall", "Jiufen Old Street"], routeColors.day3);
+        drawRoute(["National Palace Museum", "Dihua Street (Dadaocheng)", "Roaders Plus Hotel Taipei Station", "Taoyuan International Airport"], routeColors.day4);
+
+        const group = new L.featureGroup(Object.values(markers));
+        map.fitBounds(group.getBounds().pad(0.1));
+
+        function focusMapOn(name) {
+            const itineraryTab = document.getElementById('tab-itinerary');
+            if(itineraryTab && itineraryTab.classList.contains('hidden')) {
+                switchTab('itinerary');
+            }
+
+            if (markers[name]) {
+                const marker = markers[name];
+                map.flyTo(marker.getLatLng(), 15, { duration: 1.2, easeLinearity: 0.25 });
+                setTimeout(() => marker.openPopup(), 1200);
+                
+                if (window.innerWidth < 768) {
+                    const mapContainer = document.getElementById('map-container');
+                    if(mapContainer) {
+                        mapContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            }
+        }
+
+        let userMarker = null;
+        
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const text = document.getElementById('toast-text');
+            if (container && text) {
+                text.textContent = message;
+                container.classList.remove('translate-y-24', 'opacity-0');
+                setTimeout(() => {
+                    container.classList.add('translate-y-24', 'opacity-0');
+                }, 4000);
+            }
+        }
+
+        function plotUserLocation(lat, lng, popupText = "You are here!") {
+            const btnIcon = document.getElementById('find-me-icon');
+            if(btnIcon) btnIcon.className = 'fa-solid fa-location-crosshairs text-indigo-600 text-lg group-hover:rotate-90 transition-transform duration-500';
+            
+            if (userMarker) map.removeLayer(userMarker);
+
+            const userIcon = L.divIcon({
+                className: 'user-location-icon',
+                html: `<div class="relative flex h-6 w-6">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-6 w-6 bg-blue-600 border-2 border-white shadow-lg flex items-center justify-center">
+                            <div class="w-2 h-2 bg-white rounded-full"></div>
+                        </span>
+                       </div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            });
+
+            userMarker = L.marker([lat, lng], {icon: userIcon, zIndexOffset: 1000}).addTo(map);
+            userMarker.bindPopup(`<b class="font-sans text-sm">${popupText}</b>`).openPopup();
+            map.flyTo([lat, lng], 15, { duration: 1.5 });
+        }
+
+        function locateUser() {
+            const btnIcon = document.getElementById('find-me-icon');
+            
+            if (!navigator.geolocation) {
+                showToast("Geolocation is not supported by your browser.");
+                return;
+            }
+            
+            if(btnIcon) btnIcon.className = 'fa-solid fa-circle-notch fa-spin text-indigo-600 text-lg';
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    plotUserLocation(position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.warn("Location error: ", error.message);
+                    showToast("Browser blocked location. Showing demo location.");
+                    
+                    // Demo fallback (Taipei Main Station area)
+                    setTimeout(() => {
+                        plotUserLocation(25.0478, 121.5170, "Demo Location (Taipei Station)");
+                    }, 600);
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
+    </script>
+</body>
+</html>
